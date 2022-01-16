@@ -227,7 +227,7 @@ xbox.map(to_uppercase);
 ---
 
 # Mónadas
-Una mónada es una especie de functor.
+Una mónada es una especie de functor que puede aplanarse.
 Función auxiliar que pueda colocar cualquier valor ordinario dentro de la unidad más simple de nuestra estructura. Esta función es conocida como "pure", otros nombres también incluyen "unit" y "of".
 
 ```ts
@@ -240,6 +240,71 @@ Array.of(42);
 Array.of(null);
 // => Array [ null ]
 
+```
+
+---
+
+¿Qué pasaría si queremos agregar un efecto?
+
+```ts
+const num = Box(41);
+const action = (num) => Box(num + 1);
+
+const res = num.map(action);
+
+// Box(Box(42))
+
+```
+
+---
+Permiten fucionar capas de estructuras anidadas innecesarias.
+¿Cómo? 
+<br>
+
+```ts
+function Box(data) {
+  return {
+    map(fn) {
+      return Box(fn(data));
+    },
+    join() {
+      return data;
+    }
+  }
+}
+
+const num = Box(41);
+const action = (num) => Box(num + 1);
+
+const res = num.map(action).join();
+
+res.map(console.log);
+
+```
+
+---
+Los arreglos son functores, en realidad los usamos a diário pero también son mónadas y los podemos usar de muchas maneras.
+
+```js
+[[41], [42]].flat();
+// => Array [ 41, 42 ]
+```
+<br>
+<br>
+
+# Mónadas en secuencia
+
+Resulta que esta combinación de map/join es tan común que hay un método que combina las características de esos dos. Este también tiene varios nombres: "chain", "flatMap", "bind", ">>=" (en haskell). Los arreglos lo llaman flatMap.
+
+```js
+const split = str => str.split('/');
+
+['some/stuff', 'another/thing'].flatMap(split);
+
+// monad.flatMap(action)
+//   .map(another)
+//   .map(cool)
+//   .flatMap(getItNow);
 ```
 
 
