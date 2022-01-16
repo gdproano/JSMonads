@@ -1,2 +1,2 @@
 # JSMonads
-JS Exposition about monads
+JS Exposition about monads in Javascript
