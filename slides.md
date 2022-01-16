@@ -64,6 +64,9 @@ h1 {
   -webkit-text-fill-color: transparent;
   -moz-text-fill-color: transparent;
 }
+b {
+  color: teal;
+}
 </style>
 
 ---
@@ -81,18 +84,27 @@ Se fundamenta fuertemente en las matemáticas, propone
 
 # Inmutabilidad
 
-Un objeto no puede ser mutado una vez creado.  Nos brinda la ventaja de no tener "side effects"
-
-Ejemplo de esto objetos memoizados .
+Un objeto no puede ser mutado una vez creado.  Nos brinda la ventaja de no tener "efectos colaterales"
+<br>
 Para poder actualizar el estado de una propiedad se hace uso de funciones específicas las cuales retornan un objeto totalmente diferente.
+<br>
+
+Ejemplo:  Objetos memoizados.
+<br>
+
+- React.memo
+- useCallback
+- useReducer
 
 ---
 
 # Composición de funciones
 
-Creación de funciones simples hasta alcanzar las primitivas con un solo propósito. 
-Separación de estructuras de datos y funciones que operan sobre estas. 
+Creación de funciones simples hasta alcanzar las primitivas del lenguaje.
 <br>
+Debe cumplir con ser funciones de un solo propósito.
+<br> 
+Separación de estructuras de datos y funciones que operan sobre estas. 
 <br>
 
 
@@ -167,15 +179,15 @@ add(4, 8)
 - Contenedores con una característica especial: debe permitirnos transformar el valor interno en cualquier forma que nosotros queramos sin tener que dejar el contenedor.
 
 ```ts
-function Caja(data) {
+function Box(data) {
   return {
     map(fn) {
-      return Caja(fn(data));
+      return Box(fn(data));
     }
   }
 }
 
-const xbox = Caja('x');
+const xbox = Box('x');
 const to_uppercase = (str) => str.toUpperCase();
 
 xbox.map(to_uppercase).map(console.log);
@@ -184,6 +196,52 @@ xbox.map(to_uppercase).map(console.log);
 ```
 
 ---
-
-
+El ejemplo fue el llamado functior identidad. Netamente ilustrativo para demostrar el patrón que usan los functores.
+<br>
 Los beneficios que nos proporcionan los functores es la abstracción de efectos de una computación pura.
+<br>
+
+---
+
+# Ejemplo
+
+Los arreglos siguen el patrón de los functores.
+Permiten guardar múltiples valores en una misma estructura.
+<br>
+Array.map
+
+```ts
+const xbox = ['x'];
+const to_uppercase = (str) => str.toUpperCase();
+
+xbox.map(to_uppercase);
+
+```
+
+<b>Uso de los functores:</b>
+
+- Manejo de errores
+- Validar ausencia de valores
+- Procesos asíncronos
+
+---
+
+# Mónadas
+Una mónada es una especie de functor.
+Función auxiliar que pueda colocar cualquier valor ordinario dentro de la unidad más simple de nuestra estructura. Esta función es conocida como "pure", otros nombres también incluyen "unit" y "of".
+
+```ts
+Array.of('¿en serio?');
+// => Array [ "¿en serio?" ]
+
+Array.of(42);
+// => Array [ 42 ]
+
+Array.of(null);
+// => Array [ null ]
+
+```
+
+
+
+
