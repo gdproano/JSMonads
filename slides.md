@@ -16,7 +16,7 @@ info: |
   Presentation slides for developers.
 
   Learn more at [Sli.dev](https://sli.dev)
-# persist drawings in exports and build
+# persist drawings in exporjs and build
 drawings:
   persist: false
 ---
@@ -41,8 +41,8 @@ The last comment block of each slide will be treated as slide notes. It will be 
 # Contenido
 
 - 📝 **Principios de la programacón funcional** 
-- 📝 **Algebra** 
 - 📝 **Functores** 
+- 📝 **Algebra** 
 - 📝 **Mónadas** 
 - 📝 **Bibliografía** 
 
@@ -84,9 +84,9 @@ Se fundamenta fuertemente en las matemáticas, propone
 
 # Inmutabilidad
 
-Un objeto no puede ser mutado una vez creado.  Nos brinda la ventaja de no tener "efectos colaterales"
-<br>
-Para poder actualizar el estado de una propiedad se hace uso de funciones específicas las cuales retornan un objeto totalmente diferente.
+- Un objeto no puede ser mutado una vez creado.  
+- Nos brinda la ventaja de no tener "efectos colaterales"
+- Para poder actualizar el estado de una propiedad se hace uso de funciones específicas las cuales retornan un objeto totalmente diferente.
 <br>
 
 Ejemplo:  Objetos memoizados.
@@ -108,7 +108,7 @@ Separación de estructuras de datos y funciones que operan sobre estas.
 <br>
 
 
-```ts
+```js
   const comp2 = (f, g) => ((...arg) => g(f(...arg)));
   const abs = comp2(x => x * x, Math.sqrt);
   abs(-4); // => 4
@@ -131,11 +131,11 @@ Separación de estructuras de datos y funciones que operan sobre estas.
 - El valor a retornar solo depende de los argumentos de entrada
 - No modifica nada que esté fuera de su interés
 - Funciones de primer clase (pueden ser almacenadas en variables, ser pasadas como parámetro y devueltas desde funciones, sin tratamiento especial)
-- El valor a retornar solo depende de los argumentos de entrada
-- No modifica nada que esté fuera de su interés
 - Ejemplos map, reduce y filter
+<br>
+<br>
 
-```ts 
+```js 
   const [value, setValue] = useState(0);
   setValue(2);
 }
@@ -144,7 +144,7 @@ Separación de estructuras de datos y funciones que operan sobre estas.
 ---
 
 # Función pura
-```ts
+```js
 const list = [1, 2, 3, 4, 5];
 
 const squared = list.map(x => x ** 2);
@@ -165,7 +165,7 @@ const even = list.filter(x => x % 2 == 0);
 <br>
 <br>
 
-```ts
+```js
 const add(a, b) => a+b
 add(add(1,3), add(6,2))
 add(4, add(6, 2))
@@ -177,8 +177,11 @@ add(4, 8)
 
 # Functores
 - Contenedores con una característica especial: debe permitirnos transformar el valor interno en cualquier forma que nosotros queramos sin tener que dejar el contenedor.
+- Aplicación de funciones como otra propiedad de la estructura.
+- Preservar la forma de la estructura
 
-```ts
+
+```js
 function Box(data) {
   return {
     map(fn) {
@@ -199,25 +202,51 @@ xbox.map(to_uppercase).map(console.log);
 El ejemplo fue el llamado functior identidad. Netamente ilustrativo para demostrar el patrón que usan los functores.
 <br>
 Los beneficios que nos proporcionan los functores es la abstracción de efectos de una computación pura.
-<br>
+
+---
+
+# Algebra
+ Dado $\ fx$ y $\ gx$ lo siguiente debe ser cierto.
+
+ $\ value.map(fx).map(gx)$ y $\ value.map(arg => gx(fx(arg)))$ deben ser equivalentes
+
+```js
+function add_one(num) {
+  return num + 1;
+}
+
+function times_two(num) {
+  return num * 2;
+}
+
+[1].map(add_one).map(times_two);         // => [4]
+[1].map(num => times_two(add_one(num))); // => [4]
+
+```
+
+Ventajas:
+
+- Mejor el desempeño 
+- Mejor legibilidad 
 
 ---
 
 # Ejemplo
 
 Los arreglos siguen el patrón de los functores.
+<br>
 Permiten guardar múltiples valores en una misma estructura.
+<br>
 <br>
 Array.map
 
-```ts
+```js
 const xbox = ['x'];
 const to_uppercase = (str) => str.toUpperCase();
 
 xbox.map(to_uppercase);
 
 ```
-
 <b>Uso de los functores:</b>
 
 - Manejo de errores
@@ -226,11 +255,56 @@ xbox.map(to_uppercase);
 
 ---
 
+# Promises
+
+<br>
+Permiten guardar múltiples valores en una misma estructura.
+<br>
+<br>
+Array.map
+
+```js
+// Value
+1;
+
+// Box
+Promise.resolve;
+
+// Value on the box
+Promise.resolve(1);
+
+// Composition
+Promise.resolve(1).then(add_one).then(times_two);        // => 4
+Promise.resolve(1).then(num => times_two(add_one(num))); // => 4
+
+```
+---
+
+# En otra estructura
+
+```js
+const Obj = {
+  map(fn, ob) {
+    let result = {};
+    for (let [key, value] of Object.entries(ob)) {
+      result[key] = fn(value);
+    }
+
+    return result;
+  }
+};
+
+Obj.map(times_two, Obj.map(add_one, {some: 1, prop: 2})); // => {some: 4, prop: 6}
+Obj.map(num => times_two(add_one(num)), {some: 1, prop: 2}); // => {some: 4, prop: 6}
+
+```
+---
+
 # Mónadas
 Una mónada es una especie de functor que puede aplanarse.
 Función auxiliar que pueda colocar cualquier valor ordinario dentro de la unidad más simple de nuestra estructura. Esta función es conocida como "pure", otros nombres también incluyen "unit" y "of".
 
-```ts
+```js
 Array.of('¿en serio?');
 // => Array [ "¿en serio?" ]
 
@@ -246,7 +320,7 @@ Array.of(null);
 
 ¿Qué pasaría si queremos agregar un efecto?
 
-```ts
+```js
 const num = Box(41);
 const action = (num) => Box(num + 1);
 
@@ -257,11 +331,11 @@ const res = num.map(action);
 ```
 
 ---
-Permiten fucionar capas de estructuras anidadas innecesarias.
+Permiten fusionar capas de estructuras anidadas innecesarias.
 ¿Cómo? 
 <br>
 
-```ts
+```js
 function Box(data) {
   return {
     map(fn) {
@@ -283,7 +357,7 @@ res.map(console.log);
 ```
 
 ---
-Los arreglos son functores, en realidad los usamos a diário pero también son mónadas y los podemos usar de muchas maneras.
+Los arreglos son functores, en realidad los usamos a diario pero también son mónadas y los podemos usar de muchas maneras.
 
 ```js
 [[41], [42]].flat();
@@ -291,6 +365,8 @@ Los arreglos son functores, en realidad los usamos a diário pero también son m
 ```
 <br>
 <br>
+
+---
 
 # Mónadas en secuencia
 
@@ -307,6 +383,12 @@ const split = str => str.split('/');
 //   .flatMap(getItNow);
 ```
 
+---
+# Conclusiones
 
+- Este patrón nos permite enfocarnos en un problema a la vez. La función map se encarga de obtener los datos necesarios y en el callback nos podemos enfocar en cómo procesarlos.
 
+- Reutilización. Este estilo de programación promueve el uso y creación de funciones de generales que sólo se encargan de una tarea, en muchos casos estas pueden ser compartidas incluso entre proyectos.
+
+- Extensión a través de la composición. Hay gente que tiene sentimientos encontrados en este caso, especialmente si hablamos de aplicarlo a los arreglos. Pero lo que quiero decir es que los functors promueven el uso de cadenas de funciones para implementar un procedimiento.
 
